@@ -1,68 +1,67 @@
-import random
-import pygame
-from pygame.locals import *
+import random as rnd
+import pygame as pg
 import time
 
-pygame.init()
+pg.init()
 
-HEIGHT = 720
-WIDTH = 1080
-BLACK = (0, 0, 0)
-WHITE = (255, 255, 255)
-RED = (255, 0, 0)
-BLUE = (0, 0, 255)
-GREEN = (0, 255, 0)
+W_HEIGHT = 720
+W_WIDTH = 1080
+COLORS = {'BLACK': (0, 0, 0), 'WHITE': (255, 255, 255), 'RED': (
+    255, 0, 0), 'BLUE': (0, 0, 255), 'GREEN': (0, 255, 0)}
+
 DOWN = 1
 UP = 3
 LEFT = 7
 RIGHT = 9
 movements = {0: UP, 1: DOWN, 2: LEFT, 3: RIGHT}
 MOVESPEED = 2
-FPS = 120
+FPS = 60
 
-windowsSurface = pygame.display.set_mode((WIDTH, HEIGHT), 0, 32)
-pygame.display.set_caption("Dots")
-fpsClock = pygame.time.Clock()
+windowsSurface = pg.display.set_mode((W_WIDTH, W_HEIGHT), 0, 32)
+pg.display.set_caption("Dots")
+fps_Clock = pg.time.Clock()
 
 
-class Dot(pygame.Rect):
+class Dot(pg.Rect):
 
     def __init__(self) -> None:
-        self.x = random.randint(0, WIDTH)
-        self.y = random.randint(0, HEIGHT)
-        self.color = RED
+        self.x = rnd.randint(0, W_WIDTH)
+        self.y = rnd.randint(0, W_HEIGHT)
+        self.color = COLORS['RED']
         self.radius = 3
-        self.speedx = random.randint(1, 3)
-        self.speedy = random.randint(1, 3)
-        self.dot = pygame.Rect(self.x, self.y, 8, 8)
-        self.vision = 80
+        self.speedx = rnd.randint(1, 3)
+        self.speedy = rnd.randint(1, 3)
+        self.dot = pg.Rect(self.x, self.y, 8, 8)
+        # self.vision = 80
         self.connected = False
 
     def draw(self) -> None:
-        pygame.draw.circle(windowsSurface, self.color,
+        pg.draw.circle(windowsSurface, self.color,
                            (self.x, self.y), self.radius)
 
     def move(self):
         if self.y < 0:            # block has moved past the top
-            self.y += HEIGHT
-        if self.bottom > HEIGHT:  # block has moved past the bottom
-            self.y -= HEIGHT
+            self.y += W_HEIGHT
+        if self.bottom > W_HEIGHT:  # block has moved past the bottom
+            self.y -= W_HEIGHT
         if self.left < 0:         # block has moved past the left side
-            self.x += WIDTH
-        if self.right > WIDTH:   # block has moved past the right side
-            self.x -= WIDTH
+            self.x += W_WIDTH
+        if self.right > W_WIDTH:   # block has moved past the right side
+            self.x -= W_WIDTH
         self.draw()
+
+    
 
 
 def dist_between(x, y): return (abs(x.x-y.x)+abs(y.y-x.y))
 
 
 dotList: list = []
-partList = []
+partList = [] # list of particles for the background[stars effect]
 
-for i in range(0, 250):
+for i in range(0, 50):
     part = Dot()
-    part.color = WHITE
+    part.color = COLORS['WHITE']
     part.radius = 1
     partList.append(part)
     dot: Dot = Dot()
@@ -70,54 +69,45 @@ for i in range(0, 250):
 
 
 while True:
-    pygame.time.delay(10)
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
+    pg.time.delay(10)
+    for event in pg.event.get():
+        if event.type == pg.QUIT:
+            pg.quit()
             exit()
 
-    windowsSurface.fill(BLACK)
-    canMove = True
-    for x, i in enumerate(dotList):
-        if canMove:
-            movey = random.random()
-            if 0.04 > movey <= 0.05:
-                MOVESPEED *= -1
-                i.speedy = random.randint(0, 3)*MOVESPEED
+    windowsSurface.fill(COLORS['BLACK'])
+    can_Move = True
+    for i, dot_i in enumerate(dotList):
+        if can_Move:
+            movey = rnd.random()
+            if movey > 0.03:
+                pass
+            MOVESPEED *= -1
+            dot_i.speedy = rnd.randint(0, 3)*MOVESPEED
 
         else:
-            movex = random.random()
-            if 0.04 > movex <= 0.05:
-                MOVESPEED *= -1
-                i.speedx = random.randint(0, 3)*MOVESPEED
+            movex = rnd.random()
+            if movex > 0.03:
+                pass
+            MOVESPEED *= -1
+            dot_i.speedx = rnd.randint(0, 3)*MOVESPEED
 
-        i.left += i.speedx
-        i.top += i.speedy
-        canMove = False
-        i.move()
-        partList[x].draw()
+        dot_i.left += dot_i.speedx
+        dot_i.top += dot_i.speedy
+        can_Move = False
+        if event.type == pg.MOUSEMOTION:
+            mouse_pos = pg.mouse.get_pos()
+            mouse = pg.Rect(mouse_pos[0], mouse_pos[1], 6, 6)
+            if dist_between(mouse, dot_i) < 200:
+                pg.draw.line(windowsSurface, COLORS['GREEN'],
+                                 (mouse.x, mouse.y), (dot_i.x, dot_i.y), 2)
 
-        if event.type == pygame.MOUSEMOTION:
-            pos = pygame.mouse.get_pos()
-            mouse = pygame.Rect(pos[0], pos[1], 6, 6)
-            if dist_between(mouse, i) < 200:
-                pygame.draw.line(windowsSurface, GREEN,
-                                 (mouse.x, mouse.y), (i.x, i.y), 2)
-        vision = i.left+i.vision
-        """if vision in (dotList[x].x,dotList[x].y):
-            pygame.draw.line(windowsSurface,BLUE,(i.x,i.y),(dotList[x].x,dotList[x].y),1)
-            """
-        for j in dotList:
-            if dist_between(i, j) < 80 and not i.connected:
-                i.connected = True
-                j.connected = True
-                pygame.draw.line(windowsSurface, BLUE,
-                                 (i.x, i.y), (j.x, j.y),2)
-            i.connected = False
-            j.connected = False
-            
-    pygame.display.update()
-    fpsClock.tick(FPS)
+        for j, dot_j in enumerate(dotList):
+            if dist_between(dot_i, dot_j) < 80:
+                pg.draw.line(windowsSurface, COLORS['BLUE'],
+                                 (dot_i.x, dot_i.y), (dot_j.x, dot_j.y), 2)
+        dot_i.move()
+        partList[i].draw()
+    pg.display.flip()
+    fps_Clock.tick(FPS)
     time.sleep(0.02)
-    
-    
