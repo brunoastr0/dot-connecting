@@ -37,7 +37,7 @@ class Dot(pg.Rect):
 
     def draw(self) -> None:
         pg.draw.circle(windowsSurface, self.color,
-                           (self.x, self.y), self.radius)
+                       (self.x, self.y), self.radius)
 
     def move(self):
         if self.y < 0:            # block has moved past the top
@@ -50,16 +50,15 @@ class Dot(pg.Rect):
             self.x -= W_WIDTH
         self.draw()
 
-    
-
 
 def dist_between(x, y): return (abs(x.x-y.x)+abs(y.y-x.y))
 
 
 dotList: list = []
-partList = [] # list of particles for the background[stars effect]
+partList = []  # list of particles for the background[stars effect]
+visited = []
 
-for i in range(0, 200):
+for i in range(0, 220):
     part = Dot()
     part.color = COLORS['WHITE']
     part.radius = 1
@@ -77,6 +76,7 @@ while True:
     windowsSurface.fill(COLORS['BLACK'])
     can_Move = True
     for i, dot_i in enumerate(dotList):
+        dot_2: Dot
         if can_Move:
             movey = rnd.random()
             if movey <= 0.03:
@@ -97,12 +97,13 @@ while True:
             mouse = pg.Rect(mouse_pos[0], mouse_pos[1], 6, 6)
             if dist_between(mouse, dot_i) < 200:
                 pg.draw.line(windowsSurface, COLORS['GREEN'],
-                                 (mouse.x, mouse.y), (dot_i.x, dot_i.y), 2)
-
+                             (mouse.x, mouse.y), (dot_i.x, dot_i.y), 2)
         for j, dot_j in enumerate(dotList):
-            if dist_between(dot_i, dot_j) < 80:
+            visited.append(dot_j)
+            if dist_between(dot_i, dot_j) < 80 and dot_i not in visited:
                 pg.draw.line(windowsSurface, COLORS['BLUE'],
-                                 (dot_i.x, dot_i.y), (dot_j.x, dot_j.y), 2)
+                             (dot_i.x, dot_i.y), (dot_j.x, dot_j.y), 2)
+        visited.clear()    
         dot_i.move()
         partList[i].draw()
     pg.display.flip()
