@@ -59,7 +59,7 @@ def dist_between(x, y): return (abs(x.x-y.x)+abs(y.y-x.y))
 dotList: list = []
 partList = [] # list of particles for the background[stars effect]
 
-for i in range(0, 50):
+for i in range(0, 200):
     part = Dot()
     part.color = COLORS['WHITE']
     part.radius = 1
@@ -69,7 +69,6 @@ for i in range(0, 50):
 
 
 while True:
-    pg.time.delay(10)
     for event in pg.event.get():
         if event.type == pg.QUIT:
             pg.quit()
@@ -80,17 +79,15 @@ while True:
     for i, dot_i in enumerate(dotList):
         if can_Move:
             movey = rnd.random()
-            if movey > 0.03:
-                pass
-            MOVESPEED *= -1
-            dot_i.speedy = rnd.randint(0, 3)*MOVESPEED
+            if movey <= 0.03:
+                MOVESPEED *= -1
+                dot_i.speedy = rnd.randint(0, 3)*MOVESPEED
 
         else:
             movex = rnd.random()
-            if movex > 0.03:
-                pass
-            MOVESPEED *= -1
-            dot_i.speedx = rnd.randint(0, 3)*MOVESPEED
+            if movex <= 0.03:
+                MOVESPEED *= -1
+                dot_i.speedx = rnd.randint(0, 3)*MOVESPEED
 
         dot_i.left += dot_i.speedx
         dot_i.top += dot_i.speedy
